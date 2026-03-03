@@ -1,0 +1,64 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+bool isPossible(vector<int>& arr, int T, int maxBoxes) {
+    int trips = 1;
+    int currentSum = 0;
+
+    for (int i = 0; i < arr.size(); i++) {
+        if (currentSum + arr[i] <= maxBoxes) {
+            currentSum += arr[i];
+        } else {
+            trips++;
+            currentSum = arr[i];
+
+            if (trips > T)
+                return false;
+        }
+    }
+
+    return true;
+}
+
+int minimum_diamond_boxes_required(vector<int> arr, int T) {
+
+    int low = *max_element(arr.begin(), arr.end());
+    int high = 0;
+
+    for (int i = 0; i < arr.size(); i++)
+        high += arr[i];
+
+    int answer = high;
+
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+
+        if (isPossible(arr, T, mid)) {
+            answer = mid;
+            high = mid - 1;  // try smaller
+        } else {
+            low = mid + 1;   // increase limit
+        }
+    }
+
+    return answer;
+}
+
+int main() {
+    int N, T;
+    cin >> N;
+
+    vector<int> arr(N);
+    for (int i = 0; i < N; ++i) {
+        cin >> arr[i];
+    }
+
+    cin >> T;
+
+    int result = minimum_diamond_boxes_required(arr, T);
+    cout << result << endl;
+
+    return 0;
+}
