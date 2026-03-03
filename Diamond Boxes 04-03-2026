@@ -1,62 +1,45 @@
-/*
-Problem: Diamond Boxes (Minimum maximum diamonds per trip)
-Approach: Binary Search on Answer (Book Allocation Pattern)
-
-Time Complexity: O(N * log(S))
-    where S = sum of array elements
-Space Complexity: O(1)
-*/
-
 #include <iostream>
 #include <vector>
 #include <algorithm>
-
 using namespace std;
 
-/*
-    Checks if it is possible to transfer all diamonds
-    within T trips such that no trip exceeds maxCapacity.
-*/
-bool canDistribute(const vector<int>& arr, int T, int maxCapacity) {
-    int tripsRequired = 1;
-    int currentLoad = 0;
+bool isPossible(vector<int>& arr, int T, int maxBoxes) {
+    int trips = 1;
+    int currentSum = 0;
 
-    for (int diamonds : arr) {
-        if (currentLoad + diamonds <= maxCapacity) {
-            currentLoad += diamonds;
+    for (int i = 0; i < arr.size(); i++) {
+        if (currentSum + arr[i] <= maxBoxes) {
+            currentSum += arr[i];
         } else {
-            tripsRequired++;
-            currentLoad = diamonds;
+            trips++;
+            currentSum = arr[i];
 
-            if (tripsRequired > T)
+            if (trips > T)
                 return false;
         }
     }
+
     return true;
 }
 
-/*
-    Returns minimum number of boxes required per trip
-    to transfer all diamonds in T trips.
-*/
-int minimumDiamondBoxes(const vector<int>& arr, int T) {
+int minimum_diamond_boxes_required(vector<int> arr, int T) {
 
-    int low = *max_element(arr.begin(), arr.end());   // Minimum possible
-    int high = 0;                                    // Maximum possible
+    int low = *max_element(arr.begin(), arr.end());
+    int high = 0;
 
-    for (int diamonds : arr)
-        high += diamonds;
+    for (int i = 0; i < arr.size(); i++)
+        high += arr[i];
 
     int answer = high;
 
     while (low <= high) {
         int mid = low + (high - low) / 2;
 
-        if (canDistribute(arr, T, mid)) {
+        if (isPossible(arr, T, mid)) {
             answer = mid;
-            high = mid - 1;  // Try smaller capacity
+            high = mid - 1;  // try smaller
         } else {
-            low = mid + 1;   // Increase capacity
+            low = mid + 1;   // increase limit
         }
     }
 
@@ -64,9 +47,6 @@ int minimumDiamondBoxes(const vector<int>& arr, int T) {
 }
 
 int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
-
     int N, T;
     cin >> N;
 
@@ -77,6 +57,8 @@ int main() {
 
     cin >> T;
 
-    cout << minimumDiamondBoxes(arr, T) << "\n";
+    int result = minimum_diamond_boxes_required(arr, T);
+    cout << result << endl;
+
     return 0;
 }
