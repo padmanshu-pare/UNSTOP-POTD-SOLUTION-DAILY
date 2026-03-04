@@ -1,0 +1,98 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Struct to easily bundle characters and their frequencies
+typedef struct {
+    char c;
+    long long f;
+} Letter;
+
+// Comparator for qsort: Descending frequency, Ascending character
+int cmp(const void* a, const void* b) {
+    Letter* l1 = (Letter*)a;
+    Letter* l2 = (Letter*)b;
+    if (l1->f != l2->f) {
+        return (l1->f > l2->f) ? -1 : 1;
+    }
+    return l1->c - l2->c;
+}
+
+// Custom function to print an unsigned 128-bit integer
+void print_uint128(unsigned __int128 n) {
+    if (n == 0) {
+        putchar('0');
+        putchar('\n');
+        return;
+    }
+    char buf[45];
+    int i = 0;
+    while (n > 0) {
+        buf[i++] = (char)(n % 10) + '0';
+        n /= 10;
+    }
+    while (i > 0) {
+        putchar(buf[--i]);
+    }
+    putchar('\n');
+}
+
+int main() {
+    long long counts[26] = {0};
+    char buf[65536];
+    size_t bytes;
+    
+    // Fast I/O: Read string in chunks to minimize overhead and avoid massive memory allocation
+    while ((bytes = fread(buf, 1, sizeof(buf), stdin)) > 0) {
+        for (size_t i = 0; i < bytes; i++) {
+            if (buf[i] >= 'a' && buf[i] <= 'z') {
+                counts[buf[i] - 'a']++;
+            }
+        }
+    }
+    
+    Letter odds[26];
+    int odd_count = 0;
+    
+    // Filter out only the odd frequencies
+    for (int i = 0; i < 26; i++) {
+        if (counts[i] % 2 != 0) {
+            odds[odd_count].c = 'a' + i;
+            odds[odd_count].f = counts[i];
+            odd_count++;
+        }
+    }
+    
+    // Case 1: No odd frequencies
+    if (odd_count == 0) {
+        printf("-1\n");
+    } 
+    // Case 2: Fewer than 3 odd frequencies
+    else if (odd_count < 3) {
+        long long min_f = -1;
+        char min_c = 'z' + 1;
+        
+        for (int i = 0; i < odd_count; i++) {
+            if (min_f == -1 || odds[i].f < min_f) {
+                min_f = odds[i].f;
+                min_c = odds[i].c;
+            } else if (odds[i].f == min_f && odds[i].c < min_c) {
+                min_c = odds[i].c; // Tie-breaker: Alphabetical order
+            }
+        }
+        printf("%c %lld\n", min_c, min_f);
+    } 
+    // Case 3: 3 or more odd frequencies
+    else {
+        qsort(odds, odd_count, sizeof(Letter), cmp);
+        
+        for (int i = 0; i < 3; i++) {
+            printf("%c %lld\n", odds[i].c, odds[i].f);
+        }
+        
+        // Calculate product utilizing 128-bit integer to prevent overflow
+        unsigned __int128 prod = (unsigned __int128)odds[0].f * odds[1].f * odds[2].f;
+        print_uint128(prod);
+    }
+    
+    return 0;
+}
